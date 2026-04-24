@@ -1,0 +1,73 @@
+# Lead scoring weights for Proceeds Navigator
+# Edit values here without code changes.
+# Total max possible score: 90 (before penalties, which can subtract up to 20)
+
+dimensions:
+  source_reliability:
+    max: 20
+    values:
+      auction_list_official: 20      # Official county auction results page
+      agenda_item: 15                # County board agenda item
+      press_release: 10              # County press release
+      web_page_indirect: 5           # Indirect mention on county site
+      unknown: 3
+
+  proceeds_existence:
+    max: 25
+    values:
+      amount_stated: 25              # Dollar amount explicitly present
+      amount_implied: 15             # Range or "significant" language
+      keyword_present: 8             # "excess proceeds" keyword only
+      ambiguous_signal: 3            # Tangential reference
+
+  claimant_traceability:
+    max: 20
+    values:
+      named_former_owner: 20         # Name found in same source
+      lienholder_identified: 15      # Lienholder with recorded instrument
+      partial_name_match: 10         # Entity name partially matched
+      unknown: 5                     # No name found
+
+  document_complexity:
+    max: 10
+    values:
+      simple: 10                     # Single owner, no known liens
+      moderate: 6                    # LLC/trust or one known lien
+      complex: 3                     # Multiple liens, competing claims
+
+  deadline_urgency:
+    max: 15
+    values:
+      more_than_6_months: 5
+      three_to_6_months: 10
+      less_than_3_months: 15
+      unknown: 0
+
+penalties:
+  legal_ambiguity: -10               # Competing claimants, unclear ownership
+  low_confidence_entity: -5          # Partial name, no APN
+  missing_apn: -5                    # APN not found in source
+
+priority_thresholds:
+  rank_1: 80   # score >= 80
+  rank_2: 60   # score >= 60
+  rank_3: 40   # score >= 40
+  rank_4: 20   # score >= 20
+  rank_5: 0    # score < 20
+
+risk_flags:
+  requires_legal_review:
+    - claimant_type_lienholder        # Lienholder is likely claimant
+    - amount_above_threshold          # Amount > LEGAL_REVIEW_AMOUNT_THRESHOLD
+    - competing_claimant_signals      # Multiple potential claimants found
+  high:
+    - complex_lien_structure
+    - entity_ownership_llc_trust
+  medium:
+    - incomplete_address
+    - missing_apn
+    - indirect_signal
+  low:
+    - clear_former_owner
+    - stated_amount
+    - within_deadline

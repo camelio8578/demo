@@ -1,0 +1,51 @@
+INTERNAL CASE SUMMARY — CONFIDENTIAL OPERATOR RECORD
+{{ operator_name }}
+Generated: {{ generated_date }}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CASE IDENTIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Case Number:      {{ case_number }}
+County:           {{ county_name }}
+Agency:           {{ county_agency }}
+Property Address: {{ situs_address }}
+Parcel APN:       {{ parcel_apn }}
+Tax Sale Date:    {{ sale_date }}
+Claim Deadline:   {{ claim_deadline }}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CLIENT INFORMATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Client Name:      {{ client_name }}
+Client Address:   {{ client_address }}
+Contact:          {{ client_contact }}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CASE STATUS AND NOTES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+{% if notes %}
+Notes:
+{{ notes }}
+{% else %}
+Notes: [None recorded]
+{% endif %}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+COMPLIANCE CHECKLIST (operator verification)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [ ] Client was informed they may file directly at no cost
+  [ ] No government agency identity was implied or claimed
+  [ ] Service agreement reviewed before presentation to client
+        (if applicable — ATTORNEY REVIEW REQUIRED)
+  [ ] Client authorized any county contact in writing
+  [ ] REQUIRES_LEGAL_REVIEW items resolved (if any)
+  [ ] All submitted documents are copies of authentic records
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This document is for internal operator use only. It should not be
+shared with third parties. Template version: {{ template_version }}.

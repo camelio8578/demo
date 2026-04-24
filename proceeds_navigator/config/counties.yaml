@@ -1,0 +1,158 @@
+# County configuration for Proceeds Navigator
+# All URLs marked REQUIRES_VERIFICATION must be confirmed before production use.
+# Selector arrays are tried in order; first match wins.
+# keyword_fallback is always attempted if all selectors fail.
+
+counties:
+  fresno:
+    display_name: "Fresno County"
+    agency: "Fresno County Tax Collector"
+    # REQUIRES_VERIFICATION: Confirm URL is current before running scraper
+    base_url: "https://www.fresnocounty.gov/tax-collector"
+    sources:
+      - name: auction_results
+        # REQUIRES_VERIFICATION
+        url: "https://www.fresnocounty.gov/tax-collector/property-tax/tax-defaulted-properties"
+        source_type: auction_list
+        scrape_method: static
+        selectors:
+          table: ["table.auction-results", "table.tax-sale-results", "table"]
+          row: ["tr"]
+          apn_col: [0, 1]
+          address_col: [1, 2]
+          sale_date_col: [2, 3]
+          amount_col: [3, 4]
+        keyword_fallback:
+          - "excess proceeds"
+          - "tax defaulted"
+          - "tax sale"
+          - "APN"
+    claim_info:
+      # REQUIRES_VERIFICATION: Confirm filing procedure with county
+      filing_location: "Fresno County Tax Collector, 2281 Tulare Street, Suite 105, Fresno, CA 93721"
+      claim_form_url: "REQUIRES_VERIFICATION"
+      governing_statute: "California Revenue & Taxation Code § 4675"
+      deadline_days: 365
+      deadline_trigger: "tax_deed_recording_date"  # REQUIRES_LEGAL_REVIEW
+      direct_filing_note: "Claimants may file directly with the Fresno County Tax Collector at no cost."
+    scrape_schedule: "weekly"
+
+  san_diego:
+    display_name: "San Diego County"
+    agency: "San Diego County Treasurer-Tax Collector"
+    # REQUIRES_VERIFICATION
+    base_url: "https://www.sdttc.com"
+    sources:
+      - name: excess_proceeds
+        # REQUIRES_VERIFICATION
+        url: "https://www.sdttc.com/content/ttc/en/tax-collection/tax-sales/excess-proceeds.html"
+        source_type: web_page
+        scrape_method: static
+        selectors:
+          container: ["div.excess-proceeds", "main", "article", "#content"]
+          table: ["table.excess-proceeds-list", "table"]
+          row: ["tr"]
+          apn_col: [0, 1]
+          address_col: [1, 2]
+          sale_date_col: [2, 3]
+          amount_col: [3, 4]
+        keyword_fallback:
+          - "excess proceeds"
+          - "tax sale"
+          - "APN"
+          - "former owner"
+      - name: auction_results
+        # REQUIRES_VERIFICATION
+        url: "https://www.sdttc.com/content/ttc/en/tax-collection/tax-sales.html"
+        source_type: auction_list
+        scrape_method: static
+        selectors:
+          table: ["table", "div.tax-sale-list"]
+          row: ["tr", "li"]
+        keyword_fallback:
+          - "tax sale"
+          - "public auction"
+    claim_info:
+      filing_location: "San Diego County Treasurer-Tax Collector, 1600 Pacific Highway, Room 162, San Diego, CA 92101"
+      claim_form_url: "REQUIRES_VERIFICATION"
+      governing_statute: "California Revenue & Taxation Code § 4675"
+      deadline_days: 365
+      deadline_trigger: "tax_deed_recording_date"  # REQUIRES_LEGAL_REVIEW
+      direct_filing_note: "Claimants may file directly with the San Diego County Treasurer-Tax Collector at no cost."
+    scrape_schedule: "weekly"
+
+  sacramento:
+    display_name: "Sacramento County"
+    agency: "Sacramento County Tax Collector"
+    # REQUIRES_VERIFICATION
+    base_url: "https://www.saccounty.gov/tax-collector"
+    sources:
+      - name: auction_results
+        # REQUIRES_VERIFICATION
+        url: "https://www.saccounty.gov/tax-collector/defaulted-tax-sale"
+        source_type: auction_list
+        scrape_method: static
+        selectors:
+          table: ["table.tax-sale", "table"]
+          row: ["tr"]
+          apn_col: [0, 1]
+          address_col: [1, 2]
+          sale_date_col: [2, 3]
+          amount_col: [3, 4]
+        keyword_fallback:
+          - "excess proceeds"
+          - "defaulted tax sale"
+          - "APN"
+          - "tax defaulted property"
+    claim_info:
+      filing_location: "Sacramento County Tax Collector, 700 H Street, Suite 1710, Sacramento, CA 95814"
+      claim_form_url: "REQUIRES_VERIFICATION"
+      governing_statute: "California Revenue & Taxation Code § 4675"
+      deadline_days: 365
+      deadline_trigger: "tax_deed_recording_date"  # REQUIRES_LEGAL_REVIEW
+      direct_filing_note: "Claimants may file directly with the Sacramento County Tax Collector at no cost."
+    scrape_schedule: "weekly"
+
+  los_angeles:
+    display_name: "Los Angeles County"
+    agency: "Los Angeles County Treasurer and Tax Collector"
+    # REQUIRES_VERIFICATION
+    base_url: "https://ttc.lacounty.gov"
+    sources:
+      - name: excess_proceeds
+        # REQUIRES_VERIFICATION
+        url: "https://ttc.lacounty.gov/excess-proceeds"
+        source_type: web_page
+        scrape_method: static
+        selectors:
+          container: ["div.excess-proceeds", "#excess-proceeds", "main", "#content"]
+          table: ["table.ep-list", "table"]
+          row: ["tr"]
+          apn_col: [0, 1]
+          address_col: [1, 2]
+          sale_date_col: [2, 3]
+          amount_col: [3, 4]
+        keyword_fallback:
+          - "excess proceeds"
+          - "tax sale"
+          - "APN"
+      - name: tax_sale_list
+        # REQUIRES_VERIFICATION
+        url: "https://ttc.lacounty.gov/defaulted-secured-property-tax-sales"
+        source_type: auction_list
+        scrape_method: static
+        selectors:
+          table: ["table", "div.property-list"]
+          row: ["tr", "li"]
+        keyword_fallback:
+          - "tax defaulted"
+          - "public auction"
+          - "excess proceeds"
+    claim_info:
+      filing_location: "Los Angeles County Treasurer and Tax Collector, 225 N. Hill Street, Room 130, Los Angeles, CA 90012"
+      claim_form_url: "REQUIRES_VERIFICATION"
+      governing_statute: "California Revenue & Taxation Code § 4675"
+      deadline_days: 365
+      deadline_trigger: "tax_deed_recording_date"  # REQUIRES_LEGAL_REVIEW
+      direct_filing_note: "Claimants may file directly with the Los Angeles County Treasurer and Tax Collector at no cost."
+    scrape_schedule: "weekly"
