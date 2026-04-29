@@ -1,0 +1,4 @@
+numpy>=1.26
+pandas>=2.1
+matplotlib>=3.8
+ccxt>=4.2          # only needed for live bot.py
