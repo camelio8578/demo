@@ -1,12 +1,63 @@
 version: "3.9"
+
+# Proceeds Navigator — Docker Compose
+# Usage:
+#   docker-compose up --build           # Start all services
+#   docker-compose up api               # Start API only
+#   docker-compose run --rm api proceeds-navigator scrape --dry-run
+#
+# Legacy Pi demo app services (reverse-proxy, frontend, backend, mongo) are
+# preserved below under a separate profile so they do not start by default.
+
 services:
+
+  # ── Proceeds Navigator ─────────────────────────────────────────────────────
+
+  api:
+    build:
+      context: ./proceeds_navigator
+      dockerfile: Dockerfile
+    container_name: proceeds-navigator-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      DATA_DIR: /app/data
+      SNAPSHOTS_DIR: /app/data/snapshots
+      EXPORTS_DIR: /app/data/exports
+      DATABASE_URL: sqlite:////app/data/proceeds_navigator.db
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    container_name: proceeds-navigator-dashboard
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  # ── Legacy Pi Demo App (profile: pi-demo) ─────────────────────────────────
+  # Start with: docker-compose --profile pi-demo up
+
   reverse-proxy:
+    profiles: [pi-demo]
     build: ./reverse-proxy
     environment:
-      HTTPS: ${HTTPS}
-      FRONTEND_DOMAIN_NAME: ${FRONTEND_DOMAIN_NAME}
-      BACKEND_DOMAIN_NAME: ${BACKEND_DOMAIN_NAME}
-      DOMAIN_VALIDATION_KEY: ${DOMAIN_VALIDATION_KEY}
+      HTTPS: ${HTTPS:-false}
+      FRONTEND_DOMAIN_NAME: ${FRONTEND_DOMAIN_NAME:-localhost}
+      BACKEND_DOMAIN_NAME: ${BACKEND_DOMAIN_NAME:-localhost}
+      DOMAIN_VALIDATION_KEY: ${DOMAIN_VALIDATION_KEY:-}
     ports:
       - "80:80"
       - "443:443"
@@ -16,32 +67,35 @@ services:
       timeout: 10s
       retries: 5
     volumes:
-      - ${DATA_DIRECTORY}/reverse-proxy/etc-letsencrypt:/etc/letsencrypt/
+      - ${DATA_DIRECTORY:-./docker-data}/reverse-proxy/etc-letsencrypt:/etc/letsencrypt/
 
   frontend:
+    profiles: [pi-demo]
     build: ./frontend
     environment:
-      BACKEND_URL: ${BACKEND_URL}
+      BACKEND_URL: ${BACKEND_URL:-}
 
   backend:
+    profiles: [pi-demo]
     build: ./backend
     environment:
-      NODE_ENV: ${ENVIRONMENT}
-      SESSION_SECRET: ${SESSION_SECRET}
-      PI_API_KEY: ${PI_API_KEY}
-      PLATFORM_API_URL: ${PLATFORM_API_URL}
+      NODE_ENV: ${ENVIRONMENT:-development}
+      SESSION_SECRET: ${SESSION_SECRET:-}
+      PI_API_KEY: ${PI_API_KEY:-}
+      PLATFORM_API_URL: ${PLATFORM_API_URL:-https://api.minepi.com}
       MONGO_HOST: mongo
-      MONGODB_DATABASE_NAME: ${MONGODB_DATABASE_NAME}
-      MONGODB_USERNAME: ${MONGODB_USERNAME}
-      MONGODB_PASSWORD: ${MONGODB_PASSWORD}
-      FRONTEND_URL: ${FRONTEND_URL}
+      MONGODB_DATABASE_NAME: ${MONGODB_DATABASE_NAME:-demoapp}
+      MONGODB_USERNAME: ${MONGODB_USERNAME:-demoapp}
+      MONGODB_PASSWORD: ${MONGODB_PASSWORD:-password}
+      FRONTEND_URL: ${FRONTEND_URL:-}
 
   mongo:
+    profiles: [pi-demo]
     image: mongo:5.0
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME:-demoapp}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD:-password}
     ports:
-      - 27027:27017
+      - "27027:27017"
     volumes:
-      - ${DATA_DIRECTORY}/mongo/data:/data/db
+      - ${DATA_DIRECTORY:-./docker-data}/mongo/data:/data/db

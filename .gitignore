@@ -1,3 +1,19 @@
 .env
 docker-data
 .DS_Store
+
+# Proceeds Navigator runtime data
+data/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+
+# Dashboard build artifacts
+dashboard/node_modules/
+dashboard/dist/
+dashboard/.env.local
