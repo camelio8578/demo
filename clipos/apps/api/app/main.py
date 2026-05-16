@@ -9,6 +9,9 @@ from sqlalchemy import text
 
 from app.db.base import engine
 from app.routers import (
+    assets,
+    clips,
+    copy,
     creators,
     health,
     ingestion,
@@ -57,6 +60,9 @@ def create_app() -> FastAPI:
     app.include_router(platform_accounts.router)
     app.include_router(monitored_sources.router)
     app.include_router(ingestion.router)
+    app.include_router(clips.router)
+    app.include_router(assets.router)
+    app.include_router(copy.router)
 
     return app
 

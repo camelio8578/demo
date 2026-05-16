@@ -11,7 +11,6 @@ import uuid
 from typing import Any
 
 import structlog
-from celery import Celery
 
 from app.config import settings
 from app.db.base import SessionLocal
@@ -22,11 +21,10 @@ from app.db.models import (
     Transcript,
     TranscriptSegment,
 )
+from workers.celery_app import app as celery_app
 from workers.scoring.scorer import ClipScorer
 
 log = structlog.get_logger(__name__)
-
-celery_app = Celery("clipos", broker=settings.REDIS_URL, backend=settings.REDIS_URL)
 
 # Sliding-window parameters
 _WINDOW_MIN_SEC: float = 30.0
@@ -89,7 +87,12 @@ def _build_windows(
     return windows
 
 
-@celery_app.task(bind=True, max_retries=3, default_retry_delay=60)
+@celery_app.task(
+    name="workers.scoring_worker.score_video_candidates",
+    bind=True,
+    max_retries=3,
+    default_retry_delay=60,
+)
 def score_video_candidates(self, source_video_id: str) -> dict:
     """
     Main Celery task: generate and score candidate clips for a source video.

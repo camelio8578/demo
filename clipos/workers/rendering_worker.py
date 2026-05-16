@@ -10,19 +10,22 @@ import uuid
 from pathlib import Path
 
 import structlog
-from celery import Celery
 
 from app.config import settings
 from app.db.base import SessionLocal
 from app.db.models import CandidateClip, RenderedAsset, SourceVideo
+from workers.celery_app import app as celery_app
 from workers.rendering.renderer import ClipRenderer
 
 log = structlog.get_logger(__name__)
 
-celery_app = Celery("clipos", broker=settings.REDIS_URL, backend=settings.REDIS_URL)
 
-
-@celery_app.task(bind=True, max_retries=3, default_retry_delay=60)
+@celery_app.task(
+    name="workers.rendering_worker.render_clip",
+    bind=True,
+    max_retries=3,
+    default_retry_delay=60,
+)
 def render_clip(self, candidate_clip_id: str) -> dict:
     """
     Main Celery task: render a candidate clip to a 9:16 MP4.

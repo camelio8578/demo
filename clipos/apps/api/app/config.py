@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     MAX_CLIP_DURATION: int = 120
     MIN_CLIP_DURATION: int = 30
     SCORING_VERSION: str = "1.0"
+    AUTO_RENDER: bool = False
 
     class Config:
         env_file = ".env"

@@ -1,21 +1,27 @@
-# Sample Videos
+# ClipOS Sample Files
 
-Place sample video files here for seeding the development environment.
+This directory contains sample fixtures for testing.
 
-These files are gitignored (binaries). To seed a demo run:
+## Test Videos
 
-```bash
-cd /path/to/clipos
-./scripts/seed.sh
-```
+For the demo seed, the system will attempt to download a YouTube video.
+For local testing without YouTube, place a video file here:
 
-The seed script will create a demo creator and trigger ingestion of a public
-YouTube video via the API. The downloaded file will be stored in `$DATA_DIR/videos/`.
+  samples/test_video.mp4
 
-## Manual sample download
+Requirements:
+- Duration: 5+ minutes recommended
+- Format: MP4, MOV, MKV, or WebM
+- Resolution: 1920x1080 recommended (16:9)
 
-```bash
-yt-dlp -f "best[height<=720]" \
-  "https://www.youtube.com/watch?v=dQw4w9WgXcQ" \
-  -o samples/sample_video.mp4
-```
+The seed script will use this local file if VIDEO_URL is set to:
+  file:///clipos/samples/test_video.mp4
+
+## Finding a Test Video
+
+Public domain options:
+- https://www.videvo.net (free HD stock footage)
+- https://www.pexels.com/videos (CC0 licensed)
+- NASA public domain videos: https://images.nasa.gov
+
+For pipeline testing, any 5-10 minute video with speech works.

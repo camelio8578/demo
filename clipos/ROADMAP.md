@@ -1,67 +1,51 @@
 # ClipOS Roadmap
 
-## Phase 1 — Repo Scaffolding (complete)
-- Directory structure
-- Admin Next.js scaffold
-- Documentation stubs
+## MVP (v1.0) — Current
 
-## Phase 2 — Database Schema (complete)
-- 20 SQLAlchemy models with full relationships
-- Alembic migration setup
-- PostgreSQL enums for all status fields
+### Fully Working (No Credentials Required)
+- [x] Creator registry + rights profiles
+- [x] Source monitoring setup
+- [x] Video ingestion via yt-dlp
+- [x] Whisper transcription with timestamps
+- [x] 9-signal candidate scoring
+- [x] FFmpeg clip extraction
+- [x] 9:16 vertical reframe (center crop)
+- [x] ASS/SRT subtitle generation
+- [x] Caption burn-in
+- [x] Rule-based copy generation
+- [x] Admin review dashboard
+- [x] Job queue (Celery + Redis)
+- [x] Docker Compose deployment
+- [x] Full API surface
+- [x] Publishing adapter interfaces
 
-## Phase 3 — Creator & Source Registration APIs (complete)
-- Rights profiles CRUD
-- Creators CRUD (soft-delete)
-- Platform accounts (nested under creator)
-- Monitored sources (nested under creator)
-- Pydantic v2 request/response schemas
+### Requires External Credentials
+- [ ] YouTube Shorts publishing (needs OAuth app)
+- [ ] TikTok publishing (needs Developer app approval)
+- [ ] Instagram Reels publishing (needs Meta App Review)
+- [ ] LLM-enhanced copy + scoring (needs OpenAI/Anthropic key)
+- [ ] YouTube analytics ingestion
+- [ ] TikTok analytics ingestion
+- [ ] Instagram Insights ingestion
+- [ ] Cloud storage (S3/MinIO — local filesystem works without)
 
-## Phase 4 — Ingestion Pipeline (complete)
-- POST /api/v1/ingest → Celery task dispatch
-- ingest_video_task: yt-dlp metadata + download + ffmpeg audio extract
-- transcribe_video_task: status tracking stub (chains to transcription worker)
-- Video list + detail + retranscribe endpoints
+## Phase 2
 
-## Phase 5 — Transcription Worker (planned)
-- Whisper local transcription
-- OpenAI Whisper API fallback
-- Transcript segment storage
-- Word-level timestamps
+- [ ] Livestream clipping (real-time buffer processing)
+- [ ] Multi-language transcription (Whisper supports 99 languages)
+- [ ] Speaker diarization (pyannote.audio)
+- [ ] AI face-tracking reframe (OpenCV tracking model)
+- [ ] Creator-facing portal (self-serve)
+- [ ] n8n workflow templates
+- [ ] LinkedIn + Twitter publishing adapters
+- [ ] Source polling automation (cron-based channel monitoring)
+- [ ] Scoring feedback loop (performance → weights)
 
-## Phase 6 — Clip Scoring (planned)
-- Speech density scoring
-- Sentiment analysis
-- Hook phrase detection
-- Pause/burst detection
-- Duration fit scoring
-- LLM rescore option
+## Phase 3
 
-## Phase 7 — Rendering Pipeline (planned)
-- FFmpeg clip extraction
-- Subtitle generation (SRT + ASS)
-- Subtitle burn-in
-- Thumbnail generation
-- Resolution normalization (9:16 for Shorts/TikTok/Reels)
-
-## Phase 8 — Copy Generation (planned)
-- Platform-specific hook/title/caption/hashtags
-- OpenAI GPT or Anthropic Claude
-- Variant generation (A/B testing)
-
-## Phase 9 — Publishing (planned)
-- YouTube Shorts API
-- TikTok Content Posting API
-- Instagram Reels API
-- Retry logic with exponential backoff
-
-## Phase 10 — Analytics (planned)
-- Scheduled analytics snapshots
-- Performance feedback loop to scoring
-- Experiment framework
-
-## Phase 11 — Admin Dashboard (planned)
-- Creator management UI
-- Clip review queue
-- Publishing schedule
-- Analytics charts
+- [ ] B-roll overlay generation
+- [ ] Multi-clip series threading
+- [ ] White-label licensing mode
+- [ ] Social listening integration
+- [ ] Brand safety AI layer
+- [ ] Kubernetes deployment manifests

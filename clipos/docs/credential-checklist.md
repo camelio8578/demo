@@ -1,43 +1,80 @@
-# ClipOS Credential Checklist
+# Credential Checklist
 
-Fill in all credentials in `infra/.env` before running in production.
+## Works Locally Without Any Credentials
 
-## Required
+These features run fully without external API keys:
+- Video ingestion (yt-dlp, local download)
+- Transcription (Whisper, runs locally on CPU)
+- Candidate scoring (heuristic scorer)
+- Clip rendering (FFmpeg)
+- Caption generation (FFmpeg subtitle burn-in)
+- Rule-based copy generation
+- Admin UI
+- All database operations
 
-- [ ] `DATABASE_URL` — PostgreSQL connection string
-- [ ] `REDIS_URL` — Redis connection string
-- [ ] `SECRET_KEY` — 32+ random hex bytes (`openssl rand -hex 32`)
-- [ ] `DATA_DIR` — Absolute path for video/audio/rendered storage
+## Optional: LLM Enhancement
 
-## AI Providers (at least one required)
+Improves copy generation and scoring quality.
 
-- [ ] `OPENAI_API_KEY` — For Whisper transcription + GPT copy generation
-- [ ] `ANTHROPIC_API_KEY` — For Claude copy generation (if LLM_PROVIDER=anthropic)
+| Variable | Purpose | Where to get |
+|---|---|---|
+| OPENAI_API_KEY | GPT-4o copy gen + LLM scoring | platform.openai.com |
+| ANTHROPIC_API_KEY | Claude copy gen + LLM scoring | console.anthropic.com |
 
-## Platform Publishing APIs (per platform you publish to)
+Set LLM_PROVIDER=openai or LLM_PROVIDER=anthropic in .env.
 
-### YouTube
-- [ ] OAuth 2.0 client credentials in `creator_platform_accounts`
-- [ ] YouTube Data API v3 key (`YOUTUBE_API_KEY`)
+## Required for YouTube Publishing
 
-### TikTok
-- [ ] TikTok for Developers app credentials
-- [ ] Content Posting API access
+| Variable | Purpose | Where to get |
+|---|---|---|
+| YOUTUBE_API_KEY | API access | Google Cloud Console → YouTube Data API v3 |
+| YOUTUBE_CLIENT_ID | OAuth app | Google Cloud Console → OAuth 2.0 Credentials |
+| YOUTUBE_CLIENT_SECRET | OAuth app | Google Cloud Console |
+| YOUTUBE_REFRESH_TOKEN | Per-account auth | OAuth flow (run auth script) |
 
-### Instagram / Meta
-- [ ] Meta Business App with Instagram Content Publishing permission
-- [ ] Long-lived access tokens per creator account
+Steps:
+1. Create project in Google Cloud Console
+2. Enable YouTube Data API v3
+3. Create OAuth 2.0 credentials (Desktop app type)
+4. Run: python scripts/auth_youtube.py to get refresh token
+5. Add credentials to .env
 
-### Twitter / X
-- [ ] X Developer App with OAuth 2.0 + write permissions
+## Required for TikTok Publishing
 
-### LinkedIn
-- [ ] LinkedIn Developer App with `w_member_social` scope
+| Variable | Purpose | Where to get |
+|---|---|---|
+| TIKTOK_CLIENT_KEY | App credentials | developers.tiktok.com |
+| TIKTOK_CLIENT_SECRET | App credentials | developers.tiktok.com |
+| TIKTOK_ACCESS_TOKEN | Per-account auth | OAuth flow after app approval |
 
-## Security Notes
+Steps:
+1. Apply for TikTok Developer account
+2. Create app, request Content Posting API permission
+3. Wait for TikTok approval (days to weeks)
+4. Implement OAuth flow to get access tokens per creator account
 
-- Never commit `.env` to git (it is in `.gitignore`)
-- Rotate `SECRET_KEY` if it is ever exposed
-- Store platform tokens encrypted at rest (future enhancement)
-- Access tokens in `creator_platform_accounts` are stored plaintext — add
-  encryption before production use with real creator credentials
+## Required for Instagram Publishing
+
+| Variable | Purpose | Where to get |
+|---|---|---|
+| INSTAGRAM_ACCESS_TOKEN | Long-lived page token | Meta for Developers |
+| INSTAGRAM_ACCOUNT_ID | Business account ID | Meta Business Suite |
+
+Steps:
+1. Create Meta Developer account
+2. Create app with instagram_content_publish permission
+3. Submit for App Review (required for non-test accounts)
+4. Generate long-lived access token via Graph API
+
+## Required for Cloud Storage (Optional)
+
+By default, assets stored on local filesystem.
+For production, configure S3 or MinIO:
+
+| Variable | Purpose |
+|---|---|
+| USE_S3=true | Enable S3 storage |
+| S3_ENDPOINT_URL | MinIO or AWS S3 endpoint |
+| S3_BUCKET | Bucket name |
+| AWS_ACCESS_KEY_ID | Credentials |
+| AWS_SECRET_ACCESS_KEY | Credentials |

@@ -12,15 +12,13 @@ import uuid
 from pathlib import Path
 
 import structlog
-from celery import Celery
 
 from app.config import settings
 from app.db.base import SessionLocal
 from app.db.models import SourceVideo, Transcript, TranscriptSegment
+from workers.celery_app import app as celery_app
 
 log = structlog.get_logger(__name__)
-
-celery_app = Celery("clipos", broker=settings.REDIS_URL, backend=settings.REDIS_URL)
 
 
 # ---------------------------------------------------------------------------
@@ -109,7 +107,12 @@ def _transcribe(audio_path: Path, model_name: str) -> tuple[str, list[dict]]:
 # Celery task
 # ---------------------------------------------------------------------------
 
-@celery_app.task(bind=True, max_retries=3, default_retry_delay=60)
+@celery_app.task(
+    name="workers.transcription_worker.transcribe_video",
+    bind=True,
+    max_retries=3,
+    default_retry_delay=60,
+)
 def transcribe_video(self, source_video_id: str) -> dict:
     """
     Main Celery task: transcribe a downloaded source video.

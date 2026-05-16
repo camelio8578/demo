@@ -10,7 +10,6 @@ import uuid
 from pathlib import Path
 
 import structlog
-from celery import Celery
 
 from app.config import settings
 from app.db.base import SessionLocal
@@ -21,17 +20,21 @@ from app.db.models import (
     SubtitleAsset,
     TranscriptSegment,
 )
+from workers.celery_app import app as celery_app
 from workers.copy.copy_generator import CopyGenerator
 from workers.subtitle.subtitle_generator import SubtitleGenerator
 
 log = structlog.get_logger(__name__)
 
-celery_app = Celery("clipos", broker=settings.REDIS_URL, backend=settings.REDIS_URL)
-
 _TARGET_PLATFORMS = ["tiktok", "instagram", "youtube"]
 
 
-@celery_app.task(bind=True, max_retries=3, default_retry_delay=60)
+@celery_app.task(
+    name="workers.subtitle_copy_worker.generate_subtitles_and_copy",
+    bind=True,
+    max_retries=3,
+    default_retry_delay=60,
+)
 def generate_subtitles_and_copy(self, rendered_asset_id: str) -> dict:
     """
     Main Celery task: generate subtitles and platform copy for a rendered clip.
