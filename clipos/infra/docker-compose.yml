@@ -1,0 +1,158 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: clipos
+      POSTGRES_USER: clipos
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-clipos_dev_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U clipos"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ../apps/api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://clipos:${POSTGRES_PASSWORD:-clipos_dev_password}@postgres:5432/clipos
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - clipos_data:/data
+    restart: unless-stopped
+
+  worker_ingestion:
+    build:
+      context: ../apps/api
+      dockerfile: Dockerfile
+    command: celery -A workers.celery_app worker -Q ingestion -c 2 --loglevel=info -n ingestion@%h
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://clipos:${POSTGRES_PASSWORD:-clipos_dev_password}@postgres:5432/clipos
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - clipos_data:/data
+    restart: unless-stopped
+
+  worker_transcription:
+    build:
+      context: ../apps/api
+      dockerfile: Dockerfile
+    command: celery -A workers.celery_app worker -Q transcription -c 1 --loglevel=info -n transcription@%h
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://clipos:${POSTGRES_PASSWORD:-clipos_dev_password}@postgres:5432/clipos
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - clipos_data:/data
+    restart: unless-stopped
+
+  worker_rendering:
+    build:
+      context: ../apps/api
+      dockerfile: Dockerfile
+    command: celery -A workers.celery_app worker -Q rendering -c 2 --loglevel=info -n rendering@%h
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://clipos:${POSTGRES_PASSWORD:-clipos_dev_password}@postgres:5432/clipos
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - clipos_data:/data
+    restart: unless-stopped
+
+  worker_publishing:
+    build:
+      context: ../apps/api
+      dockerfile: Dockerfile
+    command: celery -A workers.celery_app worker -Q publishing -c 2 --loglevel=info -n publishing@%h
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://clipos:${POSTGRES_PASSWORD:-clipos_dev_password}@postgres:5432/clipos
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - clipos_data:/data
+    restart: unless-stopped
+
+  worker_beat:
+    build:
+      context: ../apps/api
+      dockerfile: Dockerfile
+    command: celery -A workers.celery_app beat --loglevel=info
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://clipos:${POSTGRES_PASSWORD:-clipos_dev_password}@postgres:5432/clipos
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  flower:
+    image: mher/flower:2.0
+    command: celery --broker=redis://redis:6379/0 flower --port=5555
+    ports:
+      - "5555:5555"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  admin:
+    build:
+      context: ../apps/admin
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  clipos_data:
